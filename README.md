@@ -4,10 +4,11 @@ A Model Context Protocol (MCP) server that enables AI assistants like Claude, Wi
 
 ## Features
 
-- 📄 Read PDF files and extract text content
+- 📄 Read PDF files from **local paths or URLs**
 - 🔍 Search for specific terms within PDFs
 - 📊 Get PDF metadata (page count, author, title, etc.)
 - 📖 Read specific pages or page ranges
+- 🌐 Download and analyze PDFs from the web
 - 🤖 Seamless integration with AI assistants via MCP
 
 ## Installation
@@ -133,10 +134,17 @@ Get metadata from a PDF file (page count, author, title, etc.).
 
 Once configured, you can ask your AI assistant:
 
+**Local Files:**
 - "Read pages 1-5 from document.pdf"
 - "Search for 'machine learning' in research.pdf"
 - "What's the metadata of report.pdf?"
 - "Read page 10 from presentation.pdf"
+
+**URLs:**
+- "Read this PDF: https://example.com/research-paper.pdf"
+- "Search for 'climate change' in https://example.com/report.pdf"
+- "Get metadata from https://arxiv.org/pdf/2301.00001.pdf"
+- "Read pages 1-3 from https://example.com/whitepaper.pdf"
 
 ## Development
 

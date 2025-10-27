@@ -10,6 +10,8 @@ import {
 import fs from "fs/promises";
 import pdf from "pdf-parse";
 import path from "path";
+import https from "https";
+import http from "http";
 
 interface PDFMetadata {
   title?: string;
@@ -56,7 +58,8 @@ class PDFReaderServer {
             properties: {
               path: {
                 type: "string",
-                description: "Absolute or relative path to the PDF file",
+                description:
+                  "Absolute or relative path to the PDF file, or a URL (http:// or https://)",
               },
             },
             required: ["path"],
@@ -71,7 +74,8 @@ class PDFReaderServer {
             properties: {
               path: {
                 type: "string",
-                description: "Absolute or relative path to the PDF file",
+                description:
+                  "Absolute or relative path to the PDF file, or a URL (http:// or https://)",
               },
               page: {
                 type: "number",
@@ -98,7 +102,8 @@ class PDFReaderServer {
             properties: {
               path: {
                 type: "string",
-                description: "Absolute or relative path to the PDF file",
+                description:
+                  "Absolute or relative path to the PDF file, or a URL (http:// or https://)",
               },
             },
             required: ["path"],
@@ -112,7 +117,8 @@ class PDFReaderServer {
             properties: {
               path: {
                 type: "string",
-                description: "Absolute or relative path to the PDF file",
+                description:
+                  "Absolute or relative path to the PDF file, or a URL (http:// or https://)",
               },
               query: {
                 type: "string",
@@ -201,14 +207,61 @@ class PDFReaderServer {
     });
   }
 
-  private async loadPDF(filePath: string): Promise<PDFContent> {
+  private async downloadPDF(url: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const protocol = url.startsWith("https") ? https : http;
+
+      protocol
+        .get(url, (response) => {
+          if (response.statusCode === 301 || response.statusCode === 302) {
+            // Handle redirects
+            if (response.headers.location) {
+              this.downloadPDF(response.headers.location)
+                .then(resolve)
+                .catch(reject);
+              return;
+            }
+          }
+
+          // Accept both 200 (OK) and 202 (Accepted) status codes
+          if (response.statusCode !== 200 && response.statusCode !== 202) {
+            reject(
+              new Error(`Failed to download PDF: HTTP ${response.statusCode}`)
+            );
+            return;
+          }
+
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk) => chunks.push(chunk));
+          response.on("end", () => resolve(Buffer.concat(chunks)));
+          response.on("error", reject);
+        })
+        .on("error", reject);
+    });
+  }
+
+  private isURL(pathOrUrl: string): boolean {
+    return pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://");
+  }
+
+  private async loadPDF(pathOrUrl: string): Promise<PDFContent> {
     // Check cache first
-    if (this.pdfCache.has(filePath)) {
-      return this.pdfCache.get(filePath)!;
+    if (this.pdfCache.has(pathOrUrl)) {
+      return this.pdfCache.get(pathOrUrl)!;
     }
 
-    // Read and parse PDF
-    const dataBuffer = await fs.readFile(filePath);
+    let dataBuffer: Buffer;
+
+    // Determine if input is URL or file path
+    if (this.isURL(pathOrUrl)) {
+      dataBuffer = await this.downloadPDF(pathOrUrl);
+    } else {
+      // Read from local file
+      const resolvedPath = path.resolve(pathOrUrl);
+      dataBuffer = await fs.readFile(resolvedPath);
+    }
+
+    // Parse PDF
     const data = await pdf(dataBuffer);
 
     const content: PDFContent = {
@@ -222,13 +275,15 @@ class PDFReaderServer {
     };
 
     // Cache the result
-    this.pdfCache.set(filePath, content);
+    this.pdfCache.set(pathOrUrl, content);
 
     return content;
   }
 
-  private async handleReadPDF(filePath: string) {
-    const resolvedPath = path.resolve(filePath);
+  private async handleReadPDF(pathOrUrl: string) {
+    const resolvedPath = this.isURL(pathOrUrl)
+      ? pathOrUrl
+      : path.resolve(pathOrUrl);
     const content = await this.loadPDF(resolvedPath);
 
     return {
@@ -237,7 +292,7 @@ class PDFReaderServer {
           type: "text",
           text: JSON.stringify(
             {
-              path: resolvedPath,
+              source: resolvedPath,
               text: content.text,
               metadata: content.metadata,
             },
@@ -250,12 +305,14 @@ class PDFReaderServer {
   }
 
   private async handleReadPDFPage(
-    filePath: string,
+    pathOrUrl: string,
     page?: number,
     startPage?: number,
     endPage?: number
   ) {
-    const resolvedPath = path.resolve(filePath);
+    const resolvedPath = this.isURL(pathOrUrl)
+      ? pathOrUrl
+      : path.resolve(pathOrUrl);
     const content = await this.loadPDF(resolvedPath);
 
     const lines = content.text.split("\n");
@@ -303,8 +360,10 @@ class PDFReaderServer {
     };
   }
 
-  private async handleGetMetadata(filePath: string) {
-    const resolvedPath = path.resolve(filePath);
+  private async handleGetMetadata(pathOrUrl: string) {
+    const resolvedPath = this.isURL(pathOrUrl)
+      ? pathOrUrl
+      : path.resolve(pathOrUrl);
     const content = await this.loadPDF(resolvedPath);
 
     return {
@@ -325,11 +384,13 @@ class PDFReaderServer {
   }
 
   private async handleSearchPDF(
-    filePath: string,
+    pathOrUrl: string,
     query: string,
     caseSensitive: boolean = false
   ) {
-    const resolvedPath = path.resolve(filePath);
+    const resolvedPath = this.isURL(pathOrUrl)
+      ? pathOrUrl
+      : path.resolve(pathOrUrl);
     const content = await this.loadPDF(resolvedPath);
 
     const searchText = caseSensitive

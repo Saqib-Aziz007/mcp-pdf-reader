@@ -119,7 +119,7 @@ Once configured, you can ask your AI assistant:
 
 ```bash
 # Clone the repository
-git clone https://github.com/saqibaziz/mcp-pdf-reader.git
+git clone https://github.com/Saqib-Aziz007/mcp-pdf-reader.git
 cd mcp-pdf-reader
 
 # Install dependencies
@@ -160,14 +160,14 @@ MIT License - see [LICENSE](LICENSE) file for details
 **Muhammad Saqib Aziz**
 
 - Email: saqib.aziz1000@gmail.com
-- GitHub: [@saqibaziz](https://github.com/saqibaziz)
+- GitHub: [@Saqib-Aziz007](https://github.com/Saqib-Aziz007)
 - npm: [@saqibaziz](https://www.npmjs.com/~dev.saqibaziz)
 
 ## Support
 
 If you encounter any issues or have questions:
 
-- Open an issue on [GitHub](https://github.com/saqibaziz/mcp-pdf-reader/issues)
+- Open an issue on [GitHub](https://github.com/Saqib-Aziz007/mcp-pdf-reader/issues)
 - Check the [MCP documentation](https://modelcontextprotocol.io/)
 
 ## Acknowledgments

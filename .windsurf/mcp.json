@@ -1,0 +1,31 @@
+{
+  "name": "PDF Reader",
+  "description": "MCP server for reading and analyzing PDF files - enables AI assistants to work with PDFs",
+  "version": "1.0.0",
+  "author": "Muhammad Saqib Aziz",
+  "repository": "https://github.com/Saqib-Aziz007/mcp-pdf-reader",
+  "npm": "@dev.saqibaziz/mcp-pdf-reader",
+  "command": "npx",
+  "args": ["-y", "@dev.saqibaziz/mcp-pdf-reader"],
+  "category": "document-processing",
+  "tags": ["pdf", "document", "reader", "analysis", "mcp"],
+  "icon": "📄",
+  "tools": [
+    {
+      "name": "read_pdf_pages",
+      "description": "Read specific pages from a PDF file"
+    },
+    {
+      "name": "read_pdf_page_range",
+      "description": "Read a range of pages from a PDF file"
+    },
+    {
+      "name": "search_pdf",
+      "description": "Search for terms in a PDF file"
+    },
+    {
+      "name": "get_pdf_metadata",
+      "description": "Get metadata from a PDF file"
+    }
+  ]
+}

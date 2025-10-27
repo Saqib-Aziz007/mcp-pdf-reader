@@ -44,7 +44,37 @@ Add this to your Claude Desktop configuration file:
 }
 ```
 
-### For Windsurf/Cline
+### For Windsurf
+
+**Option 1: Via Plugin Store (Coming Soon)**
+
+- Open Windsurf
+- Click the `Plugins` icon in Cascade panel
+- Search for "PDF Reader"
+- Click `Install`
+
+**Option 2: Manual Configuration**
+
+Edit your MCP configuration file:
+
+**macOS**: `~/Library/Application Support/Windsurf/User/globalStorage/codeium.codeium/mcp_config.json`
+**Windows**: `%APPDATA%\Windsurf\User\globalStorage\codeium.codeium\mcp_config.json`
+**Linux**: `~/.config/Windsurf/User/globalStorage/codeium.codeium/mcp_config.json`
+
+```json
+{
+  "mcpServers": {
+    "pdf-reader": {
+      "command": "npx",
+      "args": ["-y", "@dev.saqibaziz/mcp-pdf-reader"]
+    }
+  }
+}
+```
+
+After adding, click the refresh button in the Plugins panel.
+
+### For Cline
 
 Add this to your MCP settings file:
 
